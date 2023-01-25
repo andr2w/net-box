@@ -367,14 +367,13 @@ def main():
     training_args = Seq2SeqTrainingArguments(
         predict_with_generate=True,
         evaluation_strategy="steps",
+        per_device_train_batch_size=batch_size,
         per_device_eval_batch_size=batch_size,
-        per_device_eval_batch_size=batch_size,
-        fp16=True,
+        fp16=False,
         output_dir="./",
         logging_steps=2,
         save_steps=10,
-        eval_steps=4
-    )
+        eval_steps=4)
 
     '''
     Define a function to correctly compute the ROUGE score during validation.
@@ -400,7 +399,7 @@ def main():
 
         rouge_output = rouge.compute(predictions=pred_str, 
                                      references=label_str, 
-                                     rouge_types=['rouge2']['rouge2'].mid)
+                                     rouge_types=['rouge2'])['rouge2'].mid
         
         return {
             "rouge2_precision": round(rouge_output.precision, 4),
