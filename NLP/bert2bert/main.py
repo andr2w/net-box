@@ -418,15 +418,61 @@ def main():
 
     trainer.train()
 
+'''
+
+batch_size = 4
+
+Encoder inputs
+
+inputs_ids shape [batch_size, 512] inputs_ids pad is 0
+attention_mask [batch_size, 512]
+labels [batch_size, 128] --> decoder_start_token_id (101) at the start and padding token id (-100) at the end 
 
 
+encoder_outputs = self.encoder(
+                input_ids=input_ids, [batch_size, 512]
+                attention_mask=attention_mask, [batch_size, 512]
+                inputs_embeds=inputs_embeds, None
+                output_attentions=output_attentions, None
+                output_hidden_states=output_hidden_states, None
+                return_dict=return_dict, True
+                **kwargs_encoder,
+            )
+
+encoder_outputs --> last_hidden_state [batch_size, #num_tokens, 768]
+                    pooler_output [batch_size, 768]
+
+*****
+decoder_inputs_ids [batch_size, 128] (128 is the padding size for label)
+where it is started with two 101s and 0 for pad token at the end
+It is a function called shift_token_rights
 
 
+decoder_outputs = self.decoder(
+            input_ids=decoder_input_ids, above
+            attention_mask=decoder_attention_mask, none
+            encoder_hidden_states=encoder_hidden_states, it is the last_hidden_state --> encoder_outputs[0]
+            encoder_attention_mask=attention_mask, --> the orgianal one [batch_size, 512(padding size of the input)]
+            inputs_embeds=decoder_inputs_embeds, none
+            output_attentions=output_attentions, none
+            output_hidden_states=output_hidden_states, none
+            use_cache=use_cache, none
+            past_key_values=past_key_values, none
+            return_dict=return_dict, True
+            **kwargs_decoder,
+        )
 
+decoder_ouputs --> -logits [batch_size, 128 (labels's max_length), 30522 (vocab_size)]
+                   -past_key_values
 
+In the loss function (crossEntory) --> 
+Logits (batch_size, 128, 30522) _reshape_> logits.reshape(-1, self.decoder.config.vocab_size (30522)) -> [128 * batch_size, 30522]
+Labels (batch_size, 128) _view(-1)_> (128) 
 
+    Labels started with 101, ended with 102, padding == -100
 
-    
+*****
+'''
 
 
 
